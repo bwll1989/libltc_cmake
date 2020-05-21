@@ -44,4 +44,4 @@ struct LTCEncoder {
 	LTCFrame f;
 };
 
-int encode_byte(LTCEncoder *e, int byte, double speed);
+libltc_API int encode_byte(LTCEncoder *e, int byte, double speed);
