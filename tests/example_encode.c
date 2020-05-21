@@ -44,7 +44,7 @@
  * use a local buffer instead of a pointer to
  * libltc's internal buffer
  */
-//#ifdef USE_LOCAL_BUFFER
+//#define USE_LOCAL_BUFFER
 
 int main(int argc, char **argv) {
 	FILE* file;
@@ -137,10 +137,9 @@ int main(int argc, char **argv) {
 			ltc_encoder_encode_byte(encoder, byte_cnt, 1.0);
 
 #ifdef USE_LOCAL_BUFFER
-			int len = ltc_encoder_get_buffer(encoder, buf);
+			int len = ltc_encoder_copy_buffer(encoder, buf);
 #else
-			int len;
-			buf = ltc_encoder_get_bufptr(encoder, &len, 1);
+			int len = ltc_encoder_get_bufferptr (encoder, &buf, 1);
 #endif
 			if (len > 0) {
 				fwrite(buf, sizeof(ltcsnd_sample_t), len, file);
@@ -151,10 +150,9 @@ int main(int argc, char **argv) {
 		ltc_encoder_encode_frame(encoder);
 
 #ifdef USE_LOCAL_BUFFER
-		int len = ltc_encoder_get_buffer(encoder, buf);
+		int len = ltc_encoder_copy_buffer(encoder, buf);
 #else
-		int len;
-		buf = ltc_encoder_get_bufptr(encoder, &len, 1);
+		int len = ltc_encoder_get_bufferptr(encoder, &buf, 1);
 #endif
 
 		if (len > 0) {
