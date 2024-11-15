@@ -11,6 +11,7 @@ include_directories(src)
 set(HEADER_FILES 
 	src/decoder.h 
 	src/encoder.h
+	src/config.h
 	src/ltc.h)
 source_group("include" FILES ${HEADER_FILES})
 

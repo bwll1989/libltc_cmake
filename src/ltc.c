@@ -1,7 +1,7 @@
 /*
    libltc - en+decode linear timecode
 
-   Copyright (C) 2006-2015 Robin Gareus <robin@gareus.org>
+   Copyright (C) 2006-2022 Robin Gareus <robin@gareus.org>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -41,6 +41,10 @@ static double rint(double v) {
 LTCDecoder* ltc_decoder_create(int apv, int queue_len) {
 	LTCDecoder* d = (LTCDecoder*) calloc(1, sizeof(LTCDecoder));
 	if (!d) return NULL;
+
+	if (queue_len < 1) {
+		queue_len = 1;
+	}
 
 	d->queue_len = queue_len;
 	d->queue = (LTCFrameExt*) calloc(d->queue_len, sizeof(LTCFrameExt));
@@ -102,21 +106,18 @@ LTCWRITE_TEMPLATE(u16, unsigned short, (buf[copyStart+i] >> 8))
 int ltc_decoder_read(LTCDecoder* d, LTCFrameExt* frame) {
 	if (!frame) return -1;
 	if (d->queue_read_off != d->queue_write_off) {
+		if (d->queue_read_off == d->queue_len) {
+			d->queue_read_off = 0;
+		}
 		memcpy(frame, &d->queue[d->queue_read_off], sizeof(LTCFrameExt));
 		d->queue_read_off++;
-		if (d->queue_read_off == d->queue_len)
-			d->queue_read_off = 0;
 		return 1;
 	}
 	return 0;
 }
 
 void ltc_decoder_queue_flush(LTCDecoder* d) {
-	while (d->queue_read_off != d->queue_write_off) {
-		d->queue_read_off++;
-		if (d->queue_read_off == d->queue_len)
-			d->queue_read_off = 0;
-	}
+	d->queue_read_off = d->queue_write_off;
 }
 
 int ltc_decoder_queue_length(LTCDecoder* d) {
@@ -267,6 +268,10 @@ int ltc_encoder_set_bufsize(LTCEncoder *e, double sample_rate, double fps) {
 
 int ltc_encoder_encode_byte(LTCEncoder *e, int byte, double speed) {
 	return encode_byte(e, byte, speed);
+}
+
+int ltc_encoder_end_encode(LTCEncoder *e) {
+	return encode_transition(e);
 }
 
 void ltc_encoder_encode_frame(LTCEncoder *e) {

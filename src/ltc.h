@@ -13,7 +13,7 @@
    @author Robin Gareus <robin@gareus.org>
    @copyright
 
-   Copyright (C) 2006-2019 Robin Gareus <robin@gareus.org>
+   Copyright (C) 2006-2022 Robin Gareus <robin@gareus.org>
 
    Copyright (C) 2008-2009 Jan Weiß <jan@geheimwerk.de>
 
@@ -77,17 +77,17 @@ extern "C" {
 
 #ifndef DOXYGEN_IGNORE
 /* libltc version */
-#define LIBLTC_VERSION "1.3.1"
+#define LIBLTC_VERSION "1.3.2"
 #define LIBLTC_VERSION_MAJOR  1
 #define LIBLTC_VERSION_MINOR  3
-#define LIBLTC_VERSION_MICRO  1
+#define LIBLTC_VERSION_MICRO  2
 
 /* interface revision number
  * http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
  */
-#define LIBLTC_CUR 12
+#define LIBLTC_CUR 13
 #define LIBLTC_REV  0
-#define LIBLTC_AGE  1
+#define LIBLTC_AGE  2
 #endif /* end DOXYGEN_IGNORE */
 
 /**
@@ -833,6 +833,27 @@ libltc_API void ltc_encoder_set_filter(LTCEncoder *e, double rise_time);
  * @return 0 on success, -1 if byte is invalid or buffer overflow (speed > 10.0)
  */
 libltc_API int ltc_encoder_encode_byte(LTCEncoder *e, int byte, double speed);
+
+/**
+ * Terminate encoding and add final transition
+ *
+ * Refer to the image at \ref LTCFrame. In this example, the encoded data
+ * starts and ends with a rising edge.
+ * The transition at the start of tne next frame marks the end of
+ * the previous frame. This transition is encoded at the
+ * beginning of a frame. However if there is no additional frame to be encoded,
+ * a final terminating transition has to be added.
+ *
+ * Since LTC is usually sent as continuous stream, this is of no concern.
+ * However for a fixed, finite duration to be encoded, this method adds
+ * a terminating transition to the buffer.
+ *
+ * After this one must either call \ref ltc_encoder_reset() or \ref ltc_encoder_free.
+ *
+ * @param e encoder handle
+ * @return 0 on success, -1 if byte is invalid or buffer overflow (speed > 10.0)
+ */
+int ltc_encoder_end_encode(LTCEncoder *e);
 
 /**
  * Encode a full LTC frame at fixed speed.
